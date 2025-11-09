@@ -1,0 +1,380 @@
+---
+interface BenchmarkData {
+    name: string;
+    requests: number;
+    latency: number;
+}
+
+const benchmarks: BenchmarkData[] = [
+    { name: "Kito", requests: 70000, latency: 12 },
+    { name: "Express", requests: 9000, latency: 105 },
+    { name: "Fastify", requests: 33000, latency: 58 },
+    { name: "Hono", requests: 31000, latency: 29 },
+    { name: "Koa", requests: 27000, latency: 36 },
+];
+
+const maxRequests = Math.max(...benchmarks.map((b) => b.requests));
+const maxLatency = Math.max(...benchmarks.map((b) => b.latency));
+---
+
+<section class="max-w-7xl mx-auto px-8 py-20">
+    <h2 class="text-4xl font-bold text-center mb-4">Unmatched Performance</h2>
+    <p class="text-center text-gray-400 mb-12">
+        Kito leads the pack with unmatched performance across all tested<br />
+        and modern web frameworks, demonstrating exceptional speed.
+    </p>
+
+    <div class="flex justify-center mb-8">
+        <div
+            class="relative inline-flex items-center bg-gray-800 rounded-full p-1 justify-between min-w-60"
+        >
+            <div
+                class="absolute top-1 bottom-1 left-1 w-[calc(50%-4px)] bg-linear-to-r from-emerald-500 to-emerald-400 rounded-full transition-all duration-300 ease-out metric-slider"
+                id="metric-slider"
+            >
+            </div>
+            <button
+                class="relative z-10 px-6 py-2 text-sm font-semibold transition-colors duration-300 metric-btn active"
+                data-metric="requests"
+                id="requests-btn"
+            >
+                Requests/s
+            </button>
+            <button
+                class="relative z-10 px-6 py-2 text-sm font-semibold transition-colors duration-300 metric-btn"
+                data-metric="latency"
+                id="latency-btn"
+            >
+                Latency
+            </button>
+        </div>
+    </div>
+
+    <div class="flex justify-center mb-12">
+        <div class="metric-info transition-all duration-300" id="metric-info">
+            <div class="flex items-center space-x-2">
+                <div class="w-4 h-4 bg-emerald-400 rounded metric-color"></div>
+                <span class="text-sm text-gray-400">
+                    <span class="metric-label">Requests/sec</span>
+                    <span
+                        class="text-sm font-extrabold text-gray-400 metric-hint"
+                        >(Higher is better)</span
+                    >
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <div
+        class="flex items-end justify-center space-x-12 h-96"
+        id="benchmark-chart"
+    >
+        {
+            benchmarks.map(({ name, requests, latency }, index) => {
+                const requestsPercent = (requests / maxRequests) * 100;
+                const latencyPercent = (latency / maxLatency) * 100;
+
+                return (
+                    <div
+                        class="benchmark-group flex flex-col items-center relative"
+                        data-index={index}
+                        data-requests={requests}
+                        data-latency={latency}
+                        data-requests-percent={requestsPercent}
+                        data-latency-percent={latencyPercent}
+                    >
+                        {name === "Kito" && (
+                            <div class="crown absolute -top-16 left-1/2 -translate-x-1/2 opacity-0 transition-all duration-500">
+                                <div class="animate-float">
+                                    <svg
+                                        class="w-12 h-12 text-yellow-400 drop-shadow-lg"
+                                        fill="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path d="M12 2L15 8.5L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L9 8.5L12 2Z" />
+                                    </svg>
+                                </div>
+                            </div>
+                        )}
+
+                        <div class="flex items-end h-full">
+                            <div class="flex flex-col items-center">
+                                <div
+                                    class="metric-bar w-20 bg-emerald-400 rounded-t flex flex-col items-center justify-start pt-3 transition-all duration-700 ease-out"
+                                    data-target={requestsPercent}
+                                    style="height: 0px;"
+                                >
+                                    <span class="text-sm font-bold text-black value-label opacity-0 transition-opacity duration-300">
+                                        {Math.round(requests / 1000)}k
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-sm mt-4 text-gray-400 font-medium">
+                            {name}
+                        </div>
+                    </div>
+                );
+            })
+        }
+    </div>
+</section>
+
+<script>
+    let currentMetric: "requests" | "latency" = "requests";
+    let hasAnimated = false;
+
+    function reorderGroups(metric: "requests" | "latency") {
+        const chart = document.getElementById("benchmark-chart");
+        if (!chart) return;
+
+        const groups = Array.from(chart.querySelectorAll(".benchmark-group"));
+
+        groups.sort((a, b) => {
+            const aReq = parseInt(a.getAttribute("data-requests") || "0");
+            const bReq = parseInt(b.getAttribute("data-requests") || "0");
+            const aLat = parseInt(a.getAttribute("data-latency") || "0");
+            const bLat = parseInt(b.getAttribute("data-latency") || "0");
+
+            if (metric === "requests") {
+                return bReq - aReq;
+            } else {
+                return aLat - bLat;
+            }
+        });
+
+        groups.forEach((g) => chart.appendChild(g));
+    }
+
+    function switchMetric(metric: "requests" | "latency") {
+        if (metric === currentMetric) return;
+        currentMetric = metric;
+
+        const slider = document.getElementById("metric-slider");
+        const requestsBtn = document.getElementById("requests-btn");
+        const latencyBtn = document.getElementById("latency-btn");
+        const metricColor = document.querySelector(
+            ".metric-color",
+        ) as HTMLElement;
+        const metricLabel = document.querySelector(
+            ".metric-label",
+        ) as HTMLElement;
+        const metricHint = document.querySelector(
+            ".metric-hint",
+        ) as HTMLElement;
+        const chart = document.getElementById("benchmark-chart");
+
+        if (!slider || !requestsBtn || !latencyBtn || !chart) return;
+
+        reorderGroups(metric);
+
+        if (metric === "latency") {
+            slider.style.transform = "translateX(calc(100% + 4px))";
+            slider.className = slider.className.replace(
+                "from-emerald-500 to-emerald-400",
+                "from-blue-500 to-blue-400",
+            );
+            requestsBtn.classList.remove("active");
+            latencyBtn.classList.add("active");
+
+            if (metricColor)
+                metricColor.className =
+                    "w-4 h-4 bg-blue-500 rounded metric-color";
+            if (metricLabel) metricLabel.textContent = "Latency ms";
+            if (metricHint) metricHint.textContent = "(Lower is better)";
+        } else {
+            slider.style.transform = "translateX(0)";
+            slider.className = slider.className.replace(
+                "from-blue-500 to-blue-400",
+                "from-emerald-500 to-emerald-400",
+            );
+            latencyBtn.classList.remove("active");
+            requestsBtn.classList.add("active");
+
+            if (metricColor)
+                metricColor.className =
+                    "w-4 h-4 bg-emerald-400 rounded metric-color";
+            if (metricLabel) metricLabel.textContent = "Requests/sec";
+            if (metricHint) metricHint.textContent = "(Higher is better)";
+        }
+
+        const groups = chart.querySelectorAll(".benchmark-group");
+        groups.forEach((group) => {
+            const bar = group.querySelector(".metric-bar") as HTMLElement;
+            const valueLabel = group.querySelector(
+                ".value-label",
+            ) as HTMLElement;
+
+            if (bar && valueLabel) {
+                const targetPercent =
+                    metric === "requests"
+                        ? parseFloat(
+                              group.getAttribute("data-requests-percent") ||
+                                  "0",
+                          )
+                        : parseFloat(
+                              group.getAttribute("data-latency-percent") || "0",
+                          );
+
+                const value =
+                    metric === "requests"
+                        ? group.getAttribute("data-requests")
+                        : group.getAttribute("data-latency");
+
+                const maxHeight = chart.clientHeight * 0.85;
+                const targetHeight = (maxHeight * targetPercent) / 100;
+
+                bar.style.height = `${targetHeight}px`;
+
+                if (metric === "latency") {
+                    bar.classList.remove("bg-emerald-400", "kito-glow");
+                    bar.classList.add("bg-blue-500");
+                } else {
+                    bar.classList.remove("bg-blue-500", "kito-glow-latency");
+                    bar.classList.add("bg-emerald-400");
+                }
+
+                if (metric === "requests") {
+                    valueLabel.textContent = `${Math.round(parseInt(value || "0") / 1000)}k`;
+                    valueLabel.classList.remove("text-white");
+                    valueLabel.classList.add("text-black");
+                } else {
+                    valueLabel.textContent = `${value}ms`;
+                    valueLabel.classList.remove("text-black");
+                    valueLabel.classList.add("text-white");
+                }
+
+                const name = group
+                    .querySelector(".text-sm.mt-4")
+                    ?.textContent?.trim();
+                if (name === "Kito") {
+                    setTimeout(() => {
+                        if (metric === "requests") {
+                            bar.classList.add("kito-glow");
+                            bar.classList.remove("kito-glow-latency");
+                        } else {
+                            bar.classList.add("kito-glow-latency");
+                            bar.classList.remove("kito-glow");
+                        }
+                    }, 700);
+                }
+            }
+        });
+    }
+
+    function animateChart() {
+        if (hasAnimated) return;
+        hasAnimated = true;
+
+        const chart = document.getElementById("benchmark-chart");
+        if (!chart) return;
+
+        const groups = chart.querySelectorAll(".benchmark-group");
+
+        groups.forEach((group, index) => {
+            setTimeout(() => {
+                const bar = group.querySelector(".metric-bar") as HTMLElement;
+                if (bar) {
+                    const targetPercent = parseFloat(
+                        bar.getAttribute("data-target") || "0",
+                    );
+                    const maxHeight = chart.clientHeight * 0.85;
+                    const targetHeight = (maxHeight * targetPercent) / 100;
+                    bar.style.height = `${targetHeight}px`;
+
+                    setTimeout(() => {
+                        const label = bar.querySelector(
+                            ".value-label",
+                        ) as HTMLElement;
+                        if (label) label.style.opacity = "1";
+                    }, 700);
+                }
+
+                const crown = group.querySelector(".crown") as HTMLElement;
+                if (crown) {
+                    setTimeout(() => {
+                        crown.style.opacity = "1";
+                        crown.style.transform = "translateY(-10px)";
+                    }, 900);
+                }
+
+                const name = group
+                    .querySelector(".text-sm.mt-4")
+                    ?.textContent?.trim();
+                if (name === "Kito") {
+                    setTimeout(() => {
+                        const bar = group.querySelector(".metric-bar");
+                        if (bar) bar.classList.add("kito-glow");
+                    }, 1000);
+                }
+            }, index * 120);
+        });
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const chart = document.getElementById("benchmark-chart");
+        const requestsBtn = document.getElementById("requests-btn");
+        const latencyBtn = document.getElementById("latency-btn");
+
+        if (!chart) return;
+
+        requestsBtn?.addEventListener("click", () => switchMetric("requests"));
+        latencyBtn?.addEventListener("click", () => switchMetric("latency"));
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        animateChart();
+                        observer.disconnect();
+                    }
+                });
+            },
+            { threshold: 0.2 },
+        );
+
+        observer.observe(chart);
+    });
+</script>
+
+<style>
+    @keyframes float {
+        0%,
+        100% {
+            transform: translateY(0px);
+        }
+        50% {
+            transform: translateY(-10px);
+        }
+    }
+
+    .animate-float {
+        animation: float 2s ease-in-out infinite;
+    }
+
+    .crown {
+        filter: drop-shadow(0 0 20px rgba(250, 204, 21, 0.6));
+    }
+
+    .metric-btn {
+        color: rgb(156, 163, 175);
+    }
+
+    .metric-btn.active {
+        color: white;
+    }
+
+    .kito-glow {
+        box-shadow:
+            0 0 20px rgba(16, 185, 129, 0.8),
+            0 0 40px rgba(16, 185, 129, 0.6),
+            0 0 60px rgba(16, 185, 129, 0.4);
+    }
+
+    .kito-glow-latency {
+        box-shadow:
+            0 0 20px rgba(59, 130, 246, 0.8),
+            0 0 40px rgba(59, 130, 246, 0.6),
+            0 0 60px rgba(59, 130, 246, 0.4);
+    }
+</style>
