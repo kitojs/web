@@ -1,0 +1,49 @@
+---
+import FeatureList from "../FeatureList.astro";
+import CodeSample from "../CodeSample.astro";
+
+const features = [
+    {
+        title: "Extensible context",
+        description:
+            "Thanks to the context approach, you can extend it and add any properties you want.",
+    },
+    {
+        title: "Always secure",
+        description:
+            "Get autocomplete and typing when extending, avoiding future problems and always knowing what you're adding.",
+    },
+];
+
+const codeSnippet = `import { server } from "kitojs";
+import type { Database } from "you-prefer-db";
+
+const app = server().extend<{
+  db: Database;
+  user: { id: string; name: string };
+}>(ctx => {
+  ctx.db = db;
+  ctx.user = { id: "1", name: "Neo" };
+});
+
+app.get("/", ctx => {
+  ctx.res.json({
+    user: ctx.user.name,
+    users: ctx.db.query("SELECT * FROM users"),
+  });
+});
+
+app.listen(3000);`;
+---
+
+<section class="max-w-7xl mx-auto px-8 py-20">
+    <div class="grid grid-cols-2 gap-16 items-center">
+        <div>
+            <h2 class="text-4xl font-bold mb-8">
+                Extendable, but always secure
+            </h2>
+            <FeatureList features={features} />
+        </div>
+        <CodeSample filename="extend.ts" code={codeSnippet} />
+    </div>
+</section>
