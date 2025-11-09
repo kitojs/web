@@ -1,0 +1,38 @@
+---
+interface Feature {
+    title: string;
+    description: string;
+}
+
+interface Props {
+    features: Feature[];
+}
+
+const { features } = Astro.props;
+---
+
+<div class="space-y-6">
+    {
+        features.map(({ title, description }) => (
+            <div>
+                <div class="flex items-start space-x-3 mb-2">
+                    <svg
+                        class="w-5 h-5 text-emerald-400 mt-1"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M5 13l4 4L19 7"
+                        />
+                    </svg>
+                    <h3 class="text-xl font-semibold">{title}</h3>
+                </div>
+                <p class="text-gray-400 pl-8" set:html={description} />
+            </div>
+        ))
+    }
+</div>
