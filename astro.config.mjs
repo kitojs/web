@@ -5,10 +5,10 @@ export default defineConfig({
 	integrations: [
 		starlight({
 			title: 'Kito',
-			description: 'A web framework written in Rust for TypeScript',
+			description: '🐺 The high-performance, type-safe and modern TypeScript web framework written in Rust.',
 			favicon: '/favicon.png',
 			social: {
-				github: 'https://github.com/nehu3n/kito'
+				github: 'https://github.com/kitojs/kito'
 			}
 		})
 	]

@@ -1,6 +1,6 @@
 {
   "name": "kito",
-  "description": "📚 Kito's official website and documentation.",
+  "description": "Kito's official website and documentation.",
   "type": "module",
   "version": "0.0.1",
   "scripts": {
@@ -11,8 +11,7 @@
     "astro": "astro"
   },
   "dependencies": {
-    "@astrojs/starlight": "^0.29.3",
-    "astro": "^4.16.10",
-    "sharp": "^0.32.5"
+    "@astrojs/starlight": "^0.36.2",
+    "astro": "^5.15.4"
   }
 }
