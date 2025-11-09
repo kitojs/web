@@ -1,0 +1,45 @@
+---
+import FeatureList from "../FeatureList.astro";
+import CodeSample from "../CodeSample.astro";
+
+const features = [
+    {
+        title: "Eliminate Runtime Errors",
+        description:
+            "Catch bugs at compile time with Rust's strict type system. Sleep soundly knowing your code won't fail in production.",
+    },
+    {
+        title: "Simplify API Contracts",
+        description:
+            "Automatically validated types mean documented classes and interfaces, ensuring your API is always in sync.",
+    },
+    {
+        title: "Effortless Refactoring",
+        description:
+            "Change code confidently knowing the compiler has your back. Large refactors become trivial with type safety.",
+    },
+];
+
+const codeSnippet = `import { server } from "kitojs";
+
+const app = server();
+
+app.get("/", ctx => {
+  ctx.res.send("hello world!");
+});
+
+app.listen(3000);
+`;
+---
+
+<section class="max-w-7xl mx-auto px-8 py-20">
+    <div class="grid grid-cols-2 gap-16 items-center">
+        <div>
+            <h2 class="text-4xl font-bold mb-8">
+                Confidence Through Type-Safety
+            </h2>
+            <FeatureList features={features} />
+        </div>
+        <CodeSample filename="basic.ts" code={codeSnippet} />
+    </div>
+</section>
