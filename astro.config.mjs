@@ -1,7 +1,12 @@
 import { defineConfig } from 'astro/config'
+
 import starlight from '@astrojs/starlight'
+import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
+	vite: {
+		plugins: [tailwindcss()]
+	},
 	integrations: [
 		starlight({
 			title: 'Kito',
@@ -10,6 +15,6 @@ export default defineConfig({
 			social: {
 				github: 'https://github.com/kitojs/kito'
 			}
-		})
-	]
+		}),
+	],
 })
