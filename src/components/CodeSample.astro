@@ -1,0 +1,25 @@
+---
+import { highlight } from "../utils/syntaxHighlight";
+
+interface Props {
+    filename: string;
+    code: string;
+    raw?: boolean;
+}
+
+const { filename, code, raw = false } = Astro.props;
+const highlightedCode = raw ? code : highlight(code);
+---
+
+<div class="bg-gray-900 rounded-lg p-6">
+    <div class="flex items-center justify-between mb-4">
+        <div class="flex space-x-2">
+            <div class="w-3 h-3 bg-red-500 rounded-full"></div>
+            <div class="w-3 h-3 bg-yellow-500 rounded-full"></div>
+            <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+        </div>
+        <span class="text-sm text-gray-500">{filename}</span>
+    </div>
+    <pre
+        class="text-sm text-gray-300 leading-relaxed"><code set:html={highlightedCode} /></pre>
+</div>
