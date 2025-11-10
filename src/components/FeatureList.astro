@@ -11,13 +11,13 @@ interface Props {
 const { features } = Astro.props;
 ---
 
-<div class="space-y-6">
+<div class="space-y-4 md:space-y-6">
     {
         features.map(({ title, description }) => (
             <div>
-                <div class="flex items-start space-x-3 mb-2">
+                <div class="flex items-start space-x-2 md:space-x-3 mb-2">
                     <svg
-                        class="w-5 h-5 text-emerald-400 mt-1"
+                        class="w-4 h-4 md:w-5 md:h-5 text-emerald-400 mt-0.5 md:mt-1 flex-shrink-0"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -29,9 +29,9 @@ const { features } = Astro.props;
                             d="M5 13l4 4L19 7"
                         />
                     </svg>
-                    <h3 class="text-xl font-semibold">{title}</h3>
+                    <h3 class="text-lg md:text-xl font-semibold">{title}</h3>
                 </div>
-                <p class="text-gray-400 pl-8" set:html={description} />
+                <p class="text-sm md:text-base text-gray-400 pl-6 md:pl-8" set:html={description} />
             </div>
         ))
     }
