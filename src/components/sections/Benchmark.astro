@@ -7,10 +7,10 @@ interface BenchmarkData {
 
 const benchmarks: BenchmarkData[] = [
   { name: "Kito", requests: 70000, latency: 12 },
-  { name: "Express", requests: 9000, latency: 105 },
   { name: "Fastify", requests: 33000, latency: 58 },
   { name: "Hono", requests: 31000, latency: 29 },
   { name: "Koa", requests: 27000, latency: 36 },
+  { name: "Express", requests: 9000, latency: 105 },
 ];
 
 const maxRequests = Math.max(...benchmarks.map((b) => b.requests));
