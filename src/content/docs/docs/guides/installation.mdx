@@ -1,0 +1,113 @@
+---
+title: Installation
+description: Learn how to install and set up Kito in your project
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+## Prerequisites
+
+Before installing Kito, ensure you have one of the following JavaScript runtimes installed:
+
+- **Node.js** (v18 or higher)
+- **Deno** (v1.30 or higher)
+- **Bun** (v1.0 or higher)
+
+## Package Installation
+
+Install Kito using your preferred package manager:
+
+<Tabs>
+<TabItem label="npm">
+```bash
+npm install kitojs
+```
+</TabItem>
+
+<TabItem label="pnpm">
+```bash
+pnpm add kitojs
+```
+</TabItem>
+
+<TabItem label="yarn">
+```bash
+yarn add kitojs
+```
+</TabItem>
+
+<TabItem label="bun">
+```bash
+bun add kitojs
+```
+</TabItem>
+
+<TabItem label="deno">
+```bash
+deno add npm:kitojs
+```
+</TabItem>
+</Tabs>
+
+## TypeScript Configuration
+
+Kito is built with TypeScript and provides full type safety. Ensure your `tsconfig.json` includes:
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true
+  }
+}
+```
+
+## Verify Installation
+
+Create a simple server to verify your installation:
+
+```typescript
+import { server } from "kitojs";
+const app = server();
+
+app.get("/", ctx => {
+  ctx.res.send("Kito is working!");
+});
+
+app.listen(3000, () => console.log("server running!"));
+```
+
+Run your server:
+
+<Tabs>
+<TabItem label="Node.js">
+```bash
+node --experimental-specifier-resolution=node server.ts
+
+# or with tsx
+tsx server.ts
+```
+</TabItem>
+
+<TabItem label="Deno">
+```bash
+deno run --allow-net --allow-env --allow-read --allow-ffi server.ts
+```
+</TabItem>
+
+<TabItem label="Bun">
+```bash
+bun run server.ts
+```
+</TabItem>
+</Tabs>
+
+## Next Steps
+
+- [Quick Start Guide](/guides/quick-start) - Build your first Kito application
+- [Core Concepts](/core-concepts/routing) - Learn about routing and middleware
+- [API Reference](/api-reference/server) - Explore the complete API
