@@ -1,7 +1,132 @@
 ---
-title: Home
-description: A web framework written in Rust for TypeScript
+title: Introduction
+description: Welcome to Kito - The TypeScript web framework written in Rust
 template: doc
 ---
 
-## Welcome to the documentation.
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+Kito is a high-performance, type-safe TypeScript web framework powered by a Rust core. It combines the developer experience of TypeScript with the blazing speed and safety of Rust.
+
+## Why Kito?
+
+<CardGrid>
+  <Card title="Blazing Fast" icon="rocket">
+    Built with Rust for unmatched performance. Handle thousands of requests per second with minimal overhead.
+  </Card>
+  
+  <Card title="Type-Safe" icon="approve-check">
+    Full TypeScript support with automatic type inference. Catch errors at compile time, not in production.
+  </Card>
+  
+  <Card title="Developer Experience" icon="laptop">
+    Intuitive API inspired by Express and Fastify. Start building immediately with familiar patterns.
+  </Card>
+  
+  <Card title="Rust-Powered Validation" icon="rocket">
+    Schema validation orders of magnitude faster than JavaScript alternatives. No performance penalty for safety.
+  </Card>
+</CardGrid>
+
+## Quick Example
+
+```typescript
+import { server, schema, t } from "kitojs";
+
+const app = server();
+
+const userSchema = schema({
+  body: t.object({
+    name: t.str().min(1),
+    email: t.str().email()
+  })
+});
+
+app.post("/users", [userSchema], (ctx) => {
+  const { name, email } = ctx.req.body;
+  ctx.res.json({ name, email });
+});
+
+app.listen(3000);
+```
+
+## Key Features
+
+#### Extreme Performance
+
+Kito consistently outperforms Node.js frameworks thanks to its Rust core:
+
+<img src="https://raw.githubusercontent.com/kitojs/kito/main/bench/results/charts/result.png" />
+
+#### Type-Safe by Default
+
+Every request is validated and typed:
+
+```typescript
+// TypeScript knows exact types
+ctx.req.body.name;   // string
+ctx.req.body.email;  // string
+ctx.req.params.id;   // string (if validated)
+```
+
+#### Extensible
+
+Extend the context with custom services:
+
+```typescript
+const app = server().extend<{ db: Database }>((ctx) => {
+  ctx.db = database;
+});
+
+app.get("/users", async (ctx) => {
+  const users = await ctx.db.query("SELECT * FROM users");
+  ctx.res.json(users);
+});
+```
+
+#### Cross-Runtime
+
+Works seamlessly on:
+
+- Node.js (v18+)
+- Deno (v1.30+)
+- Bun (v1.0+)
+
+Same code, same API, everywhere.
+
+## Next Steps
+
+<CardGrid>
+  <Card title="Install Kito" icon="add-document">
+    Get Kito installed and configured in your project.
+    
+    [Installation Guide →](/docs/guides/installation)
+  </Card>
+  
+  <Card title="Quick Start" icon="rocket">
+    Build your first Kito application in minutes.
+    
+    [Quick Start →](/docs/guides/quick-start)
+  </Card>
+  
+  <Card title="Core Concepts" icon="open-book">
+    Learn about routing, validation, and middleware.
+    
+    [Learn More →](/docs/core-concepts/routing)
+  </Card>
+  
+  <Card title="API Reference" icon="document">
+    Explore the complete API documentation.
+    
+    [API Reference →](/api)
+  </Card>
+</CardGrid>
+
+## Community
+
+- [GitHub](https://github.com/kitojs/kito) - Star the project and contribute
+- [Twitter](https://x.com/kito_js) - Follow for updates
+
+## License
+
+Kito is [MIT licensed](https://github.com/kitojs/kito/blob/main/LICENSE).

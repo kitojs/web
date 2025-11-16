@@ -1,0 +1,227 @@
+---
+title: Context Extensions
+description: Extend the request context with custom properties and services
+---
+
+import { Code, Aside } from '@astrojs/starlight/components';
+
+Context extensions allow you to attach custom properties, services, and utilities to the request context, making them available in all route handlers.
+
+## Why Extend Context?
+
+Common use cases include:
+
+- Database connections
+- Authentication state
+- Logger instances
+- Configuration
+- Utility functions
+
+## Basic Extension
+
+Use the `extend()` method to add properties:
+
+```typescript
+import { server } from "kitojs";
+
+interface Database {
+  query: (sql: string) => Promise<any>;
+}
+
+const db: Database = createDatabaseConnection();
+
+const app = server().extend<{ db: Database }>(ctx => {
+  ctx.db = db;
+});
+
+app.get("/users", async ctx => {
+  const users = await ctx.db.query("SELECT * FROM users");
+  ctx.res.json(users);
+});
+```
+
+## Type-Safe Extensions
+
+Extensions are fully type-safe:
+
+```typescript
+interface Extensions {
+  db: Database;
+  config: AppConfig;
+  logger: Logger;
+}
+
+const app = server().extend<Extensions>(ctx => {
+  ctx.db = db;
+  ctx.config = config;
+  ctx.logger = logger;
+});
+
+app.get("/", ctx => {
+  // TypeScript knows about all extensions
+  ctx.db.query("...");      // ✅ Type-safe
+  ctx.config.apiKey;        // ✅ Type-safe
+  ctx.logger.info("...");   // ✅ Type-safe
+});
+```
+
+## Return Style Extension
+
+Return an object instead of mutating context:
+
+```typescript
+const app = server().extend<{ db: Database }>(() => {
+  return {
+    db: createDatabaseConnection()
+  };
+});
+```
+
+## Multiple Extensions
+
+Chain multiple extensions:
+
+```typescript
+const app = server()
+  .extend<{ db: Database }>(ctx => {
+    ctx.db = db;
+  })
+  .extend<{ cache: Cache }>(ctx => {
+    ctx.cache = cache;
+  })
+  .extend<{ logger: Logger }>(ctx => {
+    ctx.logger = logger;
+  });
+
+app.get("/", ctx => {
+  // All extensions are available
+  ctx.db.query("...");
+  ctx.cache.get("...");
+  ctx.logger.info("...");
+});
+```
+
+## Per-Request Extensions
+
+Create request-specific data:
+
+```typescript
+const app = server().extend<{ requestId: string }>(ctx => {
+  ctx.requestId = crypto.randomUUID();
+});
+
+app.get("/", ctx => {
+  ctx.logger.info(`Request ID: ${ctx.requestId}`);
+  ctx.res.send("OK");
+});
+```
+
+## Service Container
+
+Create a service container pattern:
+
+```typescript
+interface Services {
+  userService: {
+    getById: (id: string) => Promise<User>;
+    create: (data: UserData) => Promise<User>;
+  };
+  emailService: {
+    send: (to: string, subject: string, body: string) => Promise<void>;
+  };
+}
+
+const app = server().extend<Services>(() => ({
+  userService: {
+    getById: async (id) => db.query("SELECT * FROM users WHERE id = ?", [id]),
+    create: async (data) => db.query("INSERT INTO users...", data)
+  },
+  emailService: {
+    send: async (to, subject, body) => sendEmail(to, subject, body)
+  }
+}));
+
+app.post("/users", async ctx => {
+  const user = await ctx.userService.create(ctx.req.body);
+  await ctx.emailService.send(user.email, "Welcome", "...");
+  ctx.res.json(user);
+});
+```
+
+## Database Connection Example
+
+Full example with database integration:
+
+```typescript
+import { server } from "kitojs";
+import { createPool, Pool } from "mysql2/promise";
+
+const pool = createPool({
+  host: "localhost",
+  user: "root",
+  database: "myapp",
+  waitForConnections: true,
+  connectionLimit: 10
+});
+
+interface DB {
+  query: <T>(sql: string, params?: any[]) => Promise<T>;
+}
+
+const app = server().extend<{ db: DB }>(() => ({
+  db: {
+    query: async (sql, params) => {
+      const [rows] = await pool.execute(sql, params);
+      return rows;
+    }
+  }
+}));
+
+app.get("/users", async ctx => {
+  const users = await ctx.db.query("SELECT * FROM users");
+  ctx.res.json(users);
+});
+
+app.get("/users/:id", async ctx => {
+  const user = await ctx.db.query(
+    "SELECT * FROM users WHERE id = ?",
+    [ctx.req.params.id]
+  );
+  ctx.res.json(user);
+});
+```
+
+## Combining with Validation
+
+Use extensions with validated data:
+
+```typescript
+import type { Context } from "kitojs";
+
+const userSchema = schema({
+  body: t.object({
+    name: t.str(),
+    email: t.str().email()
+  })
+});
+
+type UserContext = Context<typeof userSchema>;
+
+app.post("/users", [userSchema], async (ctx: UserContext) => {
+  // Both validation and extensions work together
+  const user = await ctx.db.query(
+    "INSERT INTO users (name, email) VALUES (?, ?)",
+    [ctx.req.body.name, ctx.req.body.email]
+  );
+  
+  ctx.res.json(user);
+});
+```
+
+<Aside type="tip">
+  Extensions are created once per request, so they're perfect for request-scoped services and state.
+</Aside>
+
+<Aside>
+  Extensions run **before** route handlers but **after** middleware. Plan your architecture accordingly.
+</Aside>

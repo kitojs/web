@@ -1,0 +1,198 @@
+---
+title: Quick Start
+description: Get up and running with Kito in minutes
+---
+
+import { Tabs, TabItem, Steps, Code } from '@astrojs/starlight/components';
+
+This guide will help you create your first Kito application in just a few minutes.
+
+## Create Your First Server
+
+<Steps>
+
+1. **Install Kito**
+
+   <Tabs>
+   <TabItem label="npm">
+   ```bash
+   npm install kitojs
+   ```
+   </TabItem>
+   <TabItem label="pnpm">
+   ```bash
+   pnpm add kitojs
+   ```
+   </TabItem>
+   <TabItem label="bun">
+   ```bash
+   bun add kitojs
+   ```
+   </TabItem>
+   <TabItem label="deno">
+   ```bash
+   deno add npm:kitojs
+   ```
+   </TabItem>
+   </Tabs>
+
+2. **Create a server file**
+
+   Create a new file `server.ts`:
+
+   ```typescript
+   import { server } from "kitojs";
+   const app = server();
+
+   app.get("/", ctx => {
+     ctx.res.send("Hello, Kito!");
+   });
+
+   app.listen(3000, () => {
+     console.log("Server running on http://localhost:3000");
+   });
+   ```
+
+3. **Run your server**
+
+   <Tabs>
+   <TabItem label="Node.js">
+   ```bash
+   node --experimental-specifier-resolution=node server.ts
+
+   # Using tsx (recommended)
+   tsx server.ts
+   ```
+   </TabItem>
+   <TabItem label="Bun">
+   ```bash
+   bun run server.ts
+   ```
+   </TabItem>
+   <TabItem label="Deno">
+   ```bash
+   deno run --allow-net --allow-env --allow-read --allow-ffi server.ts
+   ```
+   </TabItem>
+   </Tabs>
+
+4. **Test your server**
+
+   Open your browser and visit `http://localhost:3000` or use curl:
+
+   ```bash
+   curl http://localhost:3000
+   # Output: Hello, Kito!
+   ```
+
+</Steps>
+
+## Add More Routes
+
+Kito makes it easy to add multiple routes with different HTTP methods:
+
+```typescript
+import { server } from "kitojs";
+const app = server();
+
+// GET route
+app.get("/", ctx => {
+  ctx.res.send("Home page");
+});
+
+// POST route
+app.post("/users", ctx => {
+  ctx.res.json({ message: "User created" });
+});
+
+// Route with parameters
+app.get("/users/:id", ctx => {
+  const { id } = ctx.req.params;
+  ctx.res.json({ userId: id });
+});
+
+app.listen(3000);
+```
+
+## Handle Request Data
+
+Access request data easily through the context object:
+
+```typescript
+app.get("/search", ctx => {
+  // Query parameters: /search?q=kito
+  const query = ctx.req.query.q;
+  ctx.res.json({ searchTerm: query });
+});
+
+app.post("/data", ctx => {
+  // Request body
+  const body = ctx.req.json();
+  ctx.res.json({ received: body });
+});
+
+app.get("/info", ctx => {
+  // Request headers
+  const userAgent = ctx.req.header("user-agent");
+  ctx.res.send(`Your user agent: ${userAgent}`);
+});
+```
+
+## Add Validation
+
+Kito includes built-in validation powered by Rust for maximum performance:
+
+```typescript
+import { server, schema, t } from "kitojs";
+const app = server();
+
+const userSchema = schema({
+  body: t.object({
+    name: t.str().min(1).max(50),
+    email: t.str().email(),
+    age: t.num().min(0).max(120).optional(),
+  }),
+});
+
+app.post("/users", [userSchema], ctx => {
+  // Body is now validated
+  const { name, email, age } = ctx.req.body;
+  ctx.res.json({ name, email, age });
+});
+
+app.listen(3000);
+```
+
+## Use Middleware
+
+Add middleware to handle cross-cutting concerns:
+
+```typescript
+import { server, middleware } from "kitojs";
+const app = server();
+
+// Logger middleware
+const logger = middleware((ctx, next) => {
+  console.log(`${ctx.req.method} ${ctx.req.url}`);
+  next();
+});
+
+// Use globally
+app.use(logger);
+
+// Or per-route
+app.get("/protected", [logger], ctx => {
+  ctx.res.send("Protected route");
+});
+
+app.listen(3000);
+```
+
+## Next Steps
+
+Now that you have a basic server running, explore more advanced features:
+
+- [Routing](/docs/core-concepts/routing) - Learn about dynamic routes and route patterns
+- [Validation](/docs/core-concepts/validation) - Deep dive into schema validation
+- [Middleware](/docs/core-concepts/middleware) - Build reusable middleware functions
+- [Context Extensions](/docs/core-concepts/context) - Extend the request context

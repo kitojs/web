@@ -1,0 +1,181 @@
+---
+title: Routing
+description: Learn how to define and organize routes in Kito
+---
+
+import { Tabs, TabItem, Code, Aside } from '@astrojs/starlight/components';
+
+Kito provides a simple and intuitive routing system that supports all HTTP methods and dynamic route parameters.
+
+## Basic Routes
+
+Define routes using HTTP method helpers:
+
+```typescript
+import { server } from "kitojs";
+const app = server();
+
+app.get("/", ctx => ctx.res.send("GET request"));
+app.post("/data", ctx => ctx.res.send("POST request"));
+app.put("/update", ctx => ctx.res.send("PUT request"));
+app.delete("/remove", ctx => ctx.res.send("DELETE request"));
+app.patch("/modify", ctx => ctx.res.send("PATCH request"));
+```
+
+## Route Parameters
+
+Capture dynamic segments in your URLs:
+
+```typescript
+// Single parameter
+app.get("/users/:id", ctx => {
+  const { id } = ctx.req.params;
+  ctx.res.json({ userId: id });
+});
+
+// Multiple parameters
+app.get("/posts/:category/:id", ctx => {
+  const { category, id } = ctx.req.params;
+  ctx.res.json({ category, id });
+});
+```
+
+<Aside type="tip">
+  Parameters are always strings. Use validation to convert them to other types.
+</Aside>
+
+## Query Parameters
+
+Access query string parameters through `ctx.req.query`:
+
+```typescript
+// URL: /search?q=kito&limit=10
+app.get("/search", ctx => {
+  const { q, limit } = ctx.req.query;
+  ctx.res.json({ 
+    searchTerm: q, 
+    limit: limit 
+  });
+});
+```
+
+## Request Body
+
+Handle JSON and form data in POST/PUT/PATCH requests:
+
+```typescript
+app.post("/users", ctx => {
+  const body = ctx.req.json();
+  
+  ctx.res.json({
+    message: "User created",
+    data: body
+  });
+});
+```
+
+## Route Chaining
+
+Chain multiple routes on the same path:
+
+```typescript
+app.route("/api/users")
+  .get(ctx => ctx.res.json({ users: [] }))
+  .post(ctx => ctx.res.json({ created: true }))
+  .end();
+```
+
+## Fluent API
+
+Chain methods directly on the server instance:
+
+```typescript
+server()
+  .get("/", ctx => ctx.res.send("Home"))
+  .get("/about", ctx => ctx.res.send("About"))
+  .post("/contact", ctx => ctx.res.send("Contact"))
+  .listen(3000);
+```
+
+## Route Organization
+
+Group related routes for better organization:
+
+```typescript
+const app = server();
+
+// User routes
+app.get("/users", ctx => ctx.res.json({ users: [] }));
+app.get("/users/:id", ctx => ctx.res.json({ user: {} }));
+app.post("/users", ctx => ctx.res.json({ created: true }));
+
+// Post routes
+app.get("/posts", ctx => ctx.res.json({ posts: [] }));
+app.get("/posts/:id", ctx => ctx.res.json({ post: {} }));
+
+app.listen(3000);
+```
+
+## Response Methods
+
+Kito provides several methods to send responses:
+
+```typescript
+// Send plain text
+app.get("/text", ctx => {
+  ctx.res.send("Hello World");
+});
+
+// Send JSON
+app.get("/json", ctx => {
+  ctx.res.json({ message: "Hello" });
+});
+
+// Send HTML
+app.get("/html", ctx => {
+  ctx.res.html("<h1>Hello</h1>");
+});
+
+// Set status code
+app.get("/not-found", ctx => {
+  ctx.res.status(404).send("Not Found");
+});
+
+// Redirect
+app.get("/old-page", ctx => {
+  ctx.res.redirect("/new-page");
+});
+```
+
+## Headers and Cookies
+
+Manage response headers and cookies:
+
+```typescript
+app.get("/with-headers", ctx => {
+  ctx.res
+    .header("X-Custom-Header", "value")
+    .cookie("session", "abc123", { httpOnly: true })
+    .json({ success: true });
+});
+```
+
+## File Responses
+
+Send files and downloads:
+
+```typescript
+// Send a file
+app.get("/file", ctx => {
+  ctx.res.sendFile("path/to/file.pdf");
+});
+
+// Trigger download
+app.get("/download", ctx => {
+  ctx.res.download("path/to/file.pdf", "custom-name.pdf");
+});
+```
+
+<Aside>
+  All response methods automatically set appropriate Content-Type headers.
+</Aside>

@@ -1,0 +1,242 @@
+---
+title: Validation
+description: Validate requests with type-safe schemas powered by Rust
+---
+
+import { Tabs, TabItem, Code, Aside } from '@astrojs/starlight/components';
+
+Kito provides high-performance request validation powered by Rust, ensuring data integrity with minimal overhead.
+
+## Basic Schema
+
+Create validation schemas using the `t` builder and `schema` helper:
+
+```typescript
+import { server, schema, t } from "kitojs";
+
+const userSchema = schema({
+  body: t.object({
+    name: t.str(),
+    email: t.str().email(),
+    age: t.num()
+  })
+});
+
+app.post("/users", [userSchema], ctx => {
+  // Body is validated
+  const { name, email, age } = ctx.req.body;
+  ctx.res.json({ name, email, age });
+});
+```
+
+## Schema Types
+
+Kito supports multiple data types with built-in validation:
+
+### Strings
+
+```typescript
+t.str()                    // Basic string
+t.str().min(3)             // Minimum length
+t.str().max(50)            // Maximum length
+t.str().length(10)         // Exact length
+t.str().email()            // Email format
+t.str().url()              // URL format
+t.str().uuid()             // UUID format
+t.str().regex(/^[a-z]+$/)  // Custom pattern
+```
+
+### Numbers
+
+```typescript
+t.num()                    // Basic number
+t.num().min(0)             // Minimum value
+t.num().max(100)           // Maximum value
+t.num().int()              // Integer only
+t.num().positive()         // Positive numbers
+t.num().negative()         // Negative numbers
+```
+
+### Booleans
+
+```typescript
+t.bool()                   // Basic boolean
+```
+
+### Arrays
+
+```typescript
+t.array(t.str())           // String array
+t.array(t.num())           // Number array
+t.array(t.str()).min(1)    // Minimum length
+t.array(t.str()).max(10)   // Maximum length
+```
+
+### Objects
+
+```typescript
+t.object({
+  name: t.str(),
+  age: t.num(),
+  active: t.bool()
+})
+```
+
+### Literals
+
+```typescript
+t.literal("admin")         // Exact string match
+t.literal(42)              // Exact number match
+t.literal(true)            // Exact boolean match
+```
+
+### Unions
+
+```typescript
+// String or number
+t.union(t.str(), t.num())
+
+// Enum-like
+t.union(
+  t.literal("admin"),
+  t.literal("user"),
+  t.literal("guest")
+)
+```
+
+## Optional Fields
+
+Make fields optional with default values:
+
+```typescript
+const schema = t.object({
+  name: t.str(),                    // Required
+  email: t.str().email().optional(), // Optional
+  age: t.num().default(18)          // Optional with default
+});
+```
+
+## Validating Different Parts
+
+Validate different parts of the request:
+
+```typescript
+const completeSchema = schema({
+  // URL parameters
+  params: t.object({
+    id: t.str().uuid()
+  }),
+  
+  // Query string
+  query: t.object({
+    page: t.num().min(1).default(1),
+    limit: t.num().min(1).max(100).default(10)
+  }),
+  
+  // Request body
+  body: t.object({
+    title: t.str().min(1).max(200),
+    content: t.str()
+  }),
+  
+  // Request headers
+  headers: t.object({
+    authorization: t.str()
+  })
+});
+
+app.post("/posts/:id", [completeSchema], ctx => {
+  // All parts are validated
+  const { id } = ctx.req.params;
+  const { page, limit } = ctx.req.query;
+  const { title, content } = ctx.req.body;
+});
+```
+
+## Type Safety
+
+Schemas provide full TypeScript type inference:
+
+```typescript
+import type { Context } from "kitojs";
+
+const userSchema = schema({
+  body: t.object({
+    name: t.str(),
+    email: t.str().email(),
+    age: t.num().optional()
+  })
+});
+
+type UserContext = Context<typeof userSchema>;
+
+app.post("/users", [userSchema], (ctx: UserContext) => {
+  // TypeScript knows the exact types
+  ctx.req.body.name;   // string
+  ctx.req.body.email;  // string
+  ctx.req.body.age;    // number | undefined
+});
+```
+
+## Nested Objects
+
+Validate complex nested structures:
+
+```typescript
+const profileSchema = schema({
+  body: t.object({
+    user: t.object({
+      name: t.str(),
+      profile: t.object({
+        bio: t.str(),
+        avatar: t.str().url().optional(),
+        social: t.object({
+          twitter: t.str().optional(),
+          github: t.str().optional()
+        })
+      })
+    })
+  })
+});
+```
+
+## Array Validation
+
+Validate arrays of complex objects:
+
+```typescript
+const batchSchema = schema({
+  body: t.object({
+    users: t.array(
+      t.object({
+        name: t.str(),
+        email: t.str().email()
+      })
+    ).min(1).max(100)
+  })
+});
+
+app.post("/users/batch", [batchSchema], ctx => {
+  const { users } = ctx.req.body;
+  // users is User[] with min 1, max 100 items
+});
+```
+
+## Error Handling
+
+When validation fails, Kito automatically returns a 400 error with details:
+
+```json
+{
+  "error": "Validation Error",
+  "message": "Validation error in body.email: Invalid email format"
+}
+```
+
+<Aside type="caution">
+  Validation errors are automatically handled. No need to write error handling code.
+</Aside>
+
+## Performance
+
+Kito's validation is powered by Rust, making it significantly faster than JavaScript-based validators.

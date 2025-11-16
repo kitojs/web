@@ -1,0 +1,110 @@
+---
+title: Middleware
+description: Build reusable request processing logic with middleware
+---
+
+import { Tabs, TabItem, Code, Aside } from '@astrojs/starlight/components';
+
+Middleware functions allow you to execute code before route handlers, enabling cross-cutting concerns like authentication, logging, and request preprocessing.
+
+## Basic Middleware
+
+Create middleware using the `middleware` helper:
+
+```typescript
+import { server, middleware } from "kitojs";
+
+const logger = middleware((ctx, next) => {
+  console.log(`${ctx.req.method} ${ctx.req.url}`);
+  next(); // Call next to continue to the next handler
+});
+
+const app = server();
+app.use(logger); // Apply globally
+
+app.get("/", ctx => {
+  ctx.res.send("Hello");
+});
+```
+
+## Middleware Order
+
+Middleware executes in the order it's registered:
+
+```typescript
+const first = middleware((ctx, next) => {
+  console.log("1");
+  next();
+});
+
+const second = middleware((ctx, next) => {
+  console.log("2");
+  next();
+});
+
+app.use(first);
+app.use(second);
+
+// Request will log: 1, 2
+```
+
+## Global vs Route Middleware
+
+Apply middleware globally or to specific routes:
+
+```typescript
+const app = server();
+
+// Global - runs on all routes
+app.use(logger);
+
+// Route-specific
+app.get("/admin", [auth, logger], ctx => {
+  ctx.res.send("Admin panel");
+});
+```
+
+## Async Middleware
+
+Use async/await for asynchronous operations:
+
+```typescript
+const dbMiddleware = middleware(async (ctx, next) => {
+  const userId = ctx.req.header("user-id");
+  
+  // Fetch user from database
+  const user = await db.getUser(userId);
+  
+  if (!user) {
+    ctx.res.status(404).send("User not found");
+    return;
+  }
+  
+  // Attach user to context (see Context Extensions)
+  await next();
+});
+```
+
+## Combining Middleware
+
+Stack multiple middleware functions:
+
+```typescript
+const app = server();
+
+app.get(
+  "/api/admin/users",
+  [auth, adminCheck, logger, rateLimiter],
+  ctx => {
+    ctx.res.json({ users: [] });
+  }
+);
+```
+
+<Aside type="tip">
+  Always call `next()` to continue the middleware chain. Forgetting it will cause requests to hang.
+</Aside>
+
+<Aside>
+  Middleware runs **before** validation schemas. If you need validated data, use route handlers or context extensions.
+</Aside>
