@@ -1,16 +1,16 @@
 ---
 interface BenchmarkData {
-  name: string;
-  requests: number;
-  latency: number;
+    name: string;
+    requests: number;
+    latency: number;
 }
 
 const benchmarks: BenchmarkData[] = [
-  { name: "Kito", requests: 70000, latency: 12 },
-  { name: "Fastify", requests: 33000, latency: 58 },
-  { name: "Hono", requests: 31000, latency: 29 },
-  { name: "Koa", requests: 27000, latency: 36 },
-  { name: "Express", requests: 9000, latency: 105 },
+    { name: "Kito", requests: 70000, latency: 12 },
+    { name: "Fastify", requests: 33000, latency: 58 },
+    { name: "Hono", requests: 31000, latency: 29 },
+    { name: "Koa", requests: 27000, latency: 36 },
+    { name: "Express", requests: 9000, latency: 105 },
 ];
 
 const maxRequests = Math.max(...benchmarks.map((b) => b.requests));
@@ -35,7 +35,7 @@ const maxLatency = Math.max(...benchmarks.map((b) => b.latency));
             class="relative inline-flex items-center bg-gray-800 rounded-full p-1 justify-between w-full max-w-xs md:min-w-60"
         >
             <div
-                class="absolute top-1 bottom-1 left-1 w-[calc(50%)] bg-linear-to-r from-emerald-500 to-emerald-400 rounded-full transition-all duration-300 ease-out metric-slider"
+                class="absolute top-1 bottom-1 left-1 w-[calc(50%-4px)] bg-linear-to-r from-emerald-500 to-emerald-400 rounded-full transition-all duration-300 ease-out metric-slider"
                 id="metric-slider"
             >
             </div>
@@ -75,7 +75,7 @@ const maxLatency = Math.max(...benchmarks.map((b) => b.latency));
     </div>
 
     <div
-        class="flex flex-wrap md:flex-nowrap items-end justify-center gap-6 md:gap-8 lg:gap-12 h-64 md:h-80 lg:h-96 px-2"
+        class="flex md:flex-nowrap items-end justify-center mt-25 md:mt-0 lg:mt-0 gap-4 md:gap-8 lg:gap-12 h-64 md:h-80 lg:h-96 px-2"
         id="benchmark-chart"
     >
         {
@@ -109,7 +109,7 @@ const maxLatency = Math.max(...benchmarks.map((b) => b.latency));
                         <div class="flex items-end h-full">
                             <div class="flex flex-col items-center">
                                 <div
-                                    class="metric-bar w-12 md:w-16 lg:w-20 bg-emerald-400 rounded-t flex flex-col items-center justify-start pt-2 md:pt-3 transition-all duration-700 ease-out"
+                                    class="metric-bar w-10 md:w-16 lg:w-20 bg-emerald-400 rounded-t flex flex-col items-center justify-start pt-2 md:pt-3 transition-all duration-700 ease-out"
                                     data-target={requestsPercent}
                                     style="height: 0px;"
                                 >
