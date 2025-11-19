@@ -7,9 +7,17 @@
 >
     <a href="/" class="flex items-center space-x-2">
         <img src="/favicon.svg" class="w-8 h-8 rounded" />
-        <span class="text-xl font-bold">Kito</span>
+        <span
+            class="text-xl font-[oswald] font-[800] tracking-[0.1em] text-[#3cd0ac]"
+        >
+            <span id="typed-text" class="relative left-0">KITO</span><span
+                class="animate-blink">_</span
+            >
+        </span>
     </a>
-    <div class="hidden lg:flex items-center space-x-8">
+    <div
+        class="hidden lg:flex items-center space-x-8 absolute left-1/2 transform -translate-x-1/2"
+    >
         <a
             href="/docs/get-started"
             class="text-gray-400 hover:text-white transition">Get started</a
@@ -98,5 +106,20 @@
         menuBtn?.addEventListener("click", () => {
             mobileMenu?.classList.toggle("hidden");
         });
+
+        // Typed text animation
+        const typedText = document.getElementById("typed-text");
+        const text = "KITO";
+
+        let index = 0;
+        function type() {
+            if (index < text.length) {
+                typedText!.textContent += text.charAt(index);
+                index++;
+                setTimeout(type, 250);
+            }
+        }
+        typedText!.textContent = "";
+        setTimeout(type, 450);
     });
 </script>
