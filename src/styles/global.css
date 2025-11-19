@@ -4,4 +4,21 @@
   body {
     font-family: "Inter", sans-serif;
   }
+
+  @keyframes blink {
+    0%,
+    50%,
+    100% {
+      opacity: 1;
+    }
+
+    25%,
+    75% {
+      opacity: 0;
+    }
+  }
+
+  .animate-blink {
+    animation: blink 1s steps(1, start) infinite;
+  }
 }
