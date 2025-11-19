@@ -13,7 +13,7 @@ export default defineConfig({
       title: "Kito",
       description:
         "🐺 The high-performance, type-safe and modern TypeScript web framework written in Rust.",
-      favicon: "/favicon.png",
+      favicon: "/favicon.svg",
       social: [
         {
           icon: "github",
