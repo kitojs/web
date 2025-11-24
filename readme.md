@@ -1,4 +1,4 @@
-<img src="https://github.com/kitojs/.github/blob/1461ad6c9d6eb7f952c3fbd3a6ed3c21dd78eebb/assets/kito-logo.png" width="200px" align="right" /> 
+<img src="https://github.com/kitojs/.github/blob/882f94e7c1bb1c463ad475539aa4d53a2eeef1d5/assets/kito-logo.svg" width="200px" align="right" /> 
 
 # Kito [website](https://kito.pages.dev) [![Cloudflare](https://img.shields.io/badge/Cloudflare-F38020?style=for-the-badge&logo=Cloudflare&logoColor=white)](https://cloudflare.com)
 
@@ -38,3 +38,4 @@ pnpm dev
 Licensed under the [MIT License](./license).
 
 ---
+
