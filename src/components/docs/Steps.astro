@@ -1,0 +1,47 @@
+---
+---
+
+<div class="steps my-8">
+  <slot />
+</div>
+
+<style>
+  .steps :global(ol) {
+    counter-reset: step;
+    list-style: none;
+    padding-left: 0;
+    margin-top: 0;
+  }
+  
+  .steps :global(li) {
+    counter-increment: step;
+    position: relative;
+    padding-left: 3rem;
+    margin-bottom: 2rem;
+  }
+  
+  .steps :global(li::before) {
+    content: counter(step);
+    position: absolute;
+    left: 0;
+    top: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background-color: rgba(52, 211, 153, 0.1);
+    border: 2px solid #34d399;
+    color: #34d399;
+    font-weight: 700;
+    font-size: 0.875rem;
+  }
+  
+  .steps :global(li > strong:first-child) {
+    display: block;
+    color: #fff;
+    font-size: 1.125rem;
+    margin-bottom: 0.5rem;
+  }
+</style>

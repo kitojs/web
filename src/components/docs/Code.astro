@@ -1,0 +1,39 @@
+---
+interface Props {
+  code?: string;
+  lang?: string;
+  title?: string;
+}
+
+const { code, lang = "typescript", title } = Astro.props;
+---
+
+{code ? (
+  <div class="code-block my-6 not-prose">
+    {title && <div class="code-title">{title}</div>}
+    <pre><code class={`language-${lang}`}>{code}</code></pre>
+  </div>
+) : (
+  <slot />
+)}
+
+<style>
+  .code-block {
+    border-radius: 0.75rem;
+    overflow: hidden;
+    border: 1px solid #1f2937;
+  }
+  
+  .code-title {
+    background-color: #1f2937;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    color: #9ca3af;
+    border-bottom: 1px solid #374151;
+  }
+  
+  .code-block pre {
+    margin: 0;
+    border-radius: 0;
+  }
+</style>

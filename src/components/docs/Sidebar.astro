@@ -1,0 +1,103 @@
+---
+import { sidebarConfig } from "@utils/sidebar-config";
+
+interface Props {
+  currentPath: string;
+}
+
+const { currentPath } = Astro.props;
+
+const isActive = (link: string) => {
+  if (link === "/docs" && currentPath === "/docs") return true;
+  if (link !== "/docs" && currentPath.startsWith(link)) return true;
+  return false;
+};
+---
+
+<aside class="w-64 flex-shrink-0 sticky top-0 h-screen overflow-y-auto border-r border-gray-800 hidden lg:block">
+  <nav class="p-6 space-y-8">
+    {sidebarConfig.map((section) => (
+      <div>
+        <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">
+          {section.label}
+        </h3>
+        <ul class="space-y-2">
+          {section.items.map((item) => (
+            <li>
+              <a
+                href={item.link}
+                class={`block px-3 py-2 rounded-lg transition-colors ${
+                  isActive(item.link)
+                    ? "bg-emerald-400/10 text-emerald-400 font-medium"
+                    : "text-gray-400 hover:text-white hover:bg-gray-800/50"
+                }`}
+              >
+                {item.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    ))}
+  </nav>
+</aside>
+
+<div id="mobile-sidebar" class="fixed inset-0 bg-black/80 z-50 lg:hidden hidden">
+  <div class="fixed inset-y-0 left-0 w-64 bg-black border-r border-gray-800 overflow-y-auto">
+    <div class="flex items-center justify-between p-4 border-b border-gray-800">
+      <span class="text-lg font-bold">Documentation</span>
+      <button id="close-mobile-sidebar" class="text-gray-400 hover:text-white">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+    </div>
+    <nav class="p-6 space-y-8">
+      {sidebarConfig.map((section) => (
+        <div>
+          <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">
+            {section.label}
+          </h3>
+          <ul class="space-y-2">
+            {section.items.map((item) => (
+              <li>
+                <a
+                  href={item.link}
+                  class={`block px-3 py-2 rounded-lg transition-colors ${
+                    isActive(item.link)
+                      ? "bg-emerald-400/10 text-emerald-400 font-medium"
+                      : "text-gray-400 hover:text-white hover:bg-gray-800/50"
+                  }`}
+                >
+                  {item.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </nav>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const mobileSidebar = document.getElementById('mobile-sidebar');
+    const closeMobileSidebar = document.getElementById('close-mobile-sidebar');
+    const openMobileSidebar = document.getElementById('open-mobile-sidebar');
+    
+    openMobileSidebar?.addEventListener('click', () => {
+      mobileSidebar?.classList.remove('hidden');
+    });
+    
+    closeMobileSidebar?.addEventListener('click', () => {
+      mobileSidebar?.classList.add('hidden');
+    });
+    
+    mobileSidebar?.addEventListener('click', (e) => {
+      if (e.target === mobileSidebar) {
+        mobileSidebar.classList.add('hidden');
+      }
+    });
+  });
+</script>

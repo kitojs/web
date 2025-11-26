@@ -1,0 +1,56 @@
+---
+const id = `tabs-${Math.random().toString(36).substr(2, 9)}`;
+---
+
+<div class="tabs-container my-6" data-tabs-id={id}>
+  <div class="tabs-buttons flex gap-2 border-b border-gray-800 mb-4 overflow-x-auto pb-2 not-prose">
+  </div>
+  <div class="tabs-content">
+    <slot />
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const tabContainers = document.querySelectorAll('.tabs-container');
+    
+    tabContainers.forEach(container => {
+      const buttonsContainer = container.querySelector('.tabs-buttons');
+      const panels = container.querySelectorAll('.tab-panel');
+      
+      if (!buttonsContainer || panels.length === 0) return;
+
+      const buttons: HTMLButtonElement[] = [];
+      panels.forEach((panel, index) => {
+        const label = panel.getAttribute('data-label') || `Tab ${index + 1}`;
+        const button = document.createElement('button');
+        button.className = 'tab-button px-3 md:px-4 py-2 border-b-2 border-transparent text-gray-400 hover:text-white transition-colors font-medium text-sm md:text-base whitespace-nowrap';
+        button.textContent = label;
+        button.setAttribute('data-index', index.toString());
+        
+        button.addEventListener('click', () => {
+          buttons.forEach(btn => {
+            btn.classList.remove('border-emerald-400', 'text-emerald-400');
+            btn.classList.add('border-transparent', 'text-gray-400');
+          });
+          panels.forEach(p => p.classList.add('hidden'));
+          
+          button.classList.remove('border-transparent', 'text-gray-400');
+          button.classList.add('border-emerald-400', 'text-emerald-400');
+          panels[index].classList.remove('hidden');
+        });
+        
+        buttonsContainer.appendChild(button);
+        buttons.push(button);
+      });
+
+      if (buttons[0]) {
+        buttons[0].classList.remove('border-transparent', 'text-gray-400');
+        buttons[0].classList.add('border-emerald-400', 'text-emerald-400');
+      }
+      if (panels[0]) {
+        panels[0].classList.remove('hidden');
+      }
+    });
+  });
+</script>

@@ -1,0 +1,64 @@
+---
+interface Heading {
+  depth: number;
+  slug: string;
+  text: string;
+}
+
+interface Props {
+  headings: Heading[];
+}
+
+const { headings } = Astro.props;
+
+const tocHeadings = headings.filter(h => h.depth <= 3);
+---
+
+{tocHeadings.length > 0 && (
+  <aside class="w-64 flex-shrink-0 sticky top-0 h-screen overflow-y-auto hidden xl:block">
+    <nav class="p-6">
+      <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">
+        On This Page
+      </h3>
+      <ul class="space-y-2 text-sm">
+        {tocHeadings.map((heading) => (
+          <li style={`margin-left: ${(heading.depth - 2) * 12}px`}>
+            <a
+              href={`#${heading.slug}`}
+              class="block text-gray-400 hover:text-emerald-400 transition-colors py-1"
+            >
+              {heading.text}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  </aside>
+)}
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const id = entry.target.getAttribute('id');
+          const tocLink = document.querySelector(`a[href="#${id}"]`);
+          
+          if (entry.isIntersecting) {
+            document.querySelectorAll('aside nav a').forEach((link) => {
+              link.classList.remove('text-emerald-400', 'font-medium');
+              link.classList.add('text-gray-400');
+            });
+            tocLink?.classList.remove('text-gray-400');
+            tocLink?.classList.add('text-emerald-400', 'font-medium');
+          }
+        });
+      },
+      { rootMargin: '-100px 0px -66%' }
+    );
+
+    document.querySelectorAll('article h2[id], article h3[id]').forEach((heading) => {
+      observer.observe(heading);
+    });
+  });
+</script>

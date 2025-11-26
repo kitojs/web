@@ -1,7 +1,11 @@
 import { defineConfig } from "astro/config";
 
-import starlight from "@astrojs/starlight";
+import mdx from "@astrojs/mdx";
 import tailwindcss from "@tailwindcss/vite";
+
+import rehypeSlug from "rehype-slug";
+import rehypeAutolinkHeadings from "rehype-autolink-headings";
+import rehypePrettyCode from "rehype-pretty-code";
 
 export default defineConfig({
   vite: {
@@ -9,39 +13,23 @@ export default defineConfig({
     publicDir: "public",
   },
   integrations: [
-    starlight({
-      title: "Kito",
-      description:
-        "🐺 The high-performance, type-safe and modern TypeScript web framework written in Rust.",
-      favicon: "/favicon.png",
-      social: [
-        {
-          icon: "github",
-          label: "GitHub",
-          href: "https://github.com/kitojs/kito",
-        },
-      ],
-      sidebar: [
-        {
-          label: "Getting Started",
-          items: [
-            { label: "Introduction", link: "/docs" },
-            { label: "Installation", link: "/docs/guides/installation" },
-            { label: "Quick Start", link: "/docs/guides/quick-start" },
-          ],
-        },
-        {
-          label: "Core Concepts",
-          items: [
-            { label: "Routing", link: "/docs/core-concepts/routing" },
-            { label: "Validation", link: "/docs/core-concepts/validation" },
-            { label: "Middleware", link: "/docs/core-concepts/middleware" },
-            {
-              label: "Context Extensions",
-              link: "/docs/core-concepts/context",
-            },
-          ],
-        },
+    mdx({
+      syntaxHighlight: false,
+      rehypePlugins: [
+        rehypeSlug,
+        [
+          rehypePrettyCode,
+          {
+            theme: "github-dark",
+            keepBackground: false,
+          },
+        ],
+        [
+          rehypeAutolinkHeadings,
+          {
+            behavior: "wrap",
+          },
+        ],
       ],
     }),
   ],
