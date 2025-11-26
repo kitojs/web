@@ -9,7 +9,7 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    
+
     "fmt": "biome format",
     "fmt:fix": "biome format --write",
     "lint": "biome lint",

@@ -4,21 +4,26 @@ import DocsLayout from "@layouts/DocsLayout.astro";
 
 const docs = await getCollection("docs");
 
-let indexDoc = docs.find(doc => doc.slug === "docs/index");
+let indexDoc = docs.find((doc) => doc.slug === "docs/index");
 
 if (!indexDoc) {
-  indexDoc = docs.find(doc => doc.slug.endsWith("/index") || doc.slug === "index");
-}
-
-if (!indexDoc) {
-  indexDoc = docs.find(doc => 
-    doc.data.title?.toLowerCase().includes("introduction") ||
-    doc.slug.includes("index")
+  indexDoc = docs.find(
+    (doc) => doc.slug.endsWith("/index") || doc.slug === "index",
   );
 }
 
 if (!indexDoc) {
-  throw new Error(`Index documentation page not found. Available docs: ${docs.map(d => d.slug).join(", ")}`);
+  indexDoc = docs.find(
+    (doc) =>
+      doc.data.title?.toLowerCase().includes("introduction") ||
+      doc.slug.includes("index"),
+  );
+}
+
+if (!indexDoc) {
+  throw new Error(
+    `Index documentation page not found. Available docs: ${docs.map((d) => d.slug).join(", ")}`,
+  );
 }
 
 const { Content, headings } = await indexDoc.render();
