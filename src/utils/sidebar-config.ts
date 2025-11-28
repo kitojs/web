@@ -19,4 +19,13 @@ export const sidebarConfig = [
       },
     ],
   },
+  {
+    label: "Advanced",
+    items: [
+      {
+        label: "Clustering",
+        link: "/docs/advanced/clustering",
+      },
+    ],
+  },
 ];

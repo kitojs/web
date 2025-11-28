@@ -1,0 +1,97 @@
+---
+title: Clustering
+description: Parallelizing a Kito application using multiple processes
+---
+
+import { Code, Aside, Tabs, TabItem } from '@components/docs';
+
+Kito allows you to run multiple instances of your application across different system processes using Node.js’ native `cluster` module. This enables you to fully utilize all CPU cores and significantly improve throughput and scalability.
+Clustering is particularly helpful in production environments where you need to handle large amounts of concurrent traffic without modifying your application logic.
+
+## How Clustering Works
+
+When clustering is enabled, the primary (master) process spawns multiple worker processes.
+Each worker runs the exact same Kito application, and they all share the same network interface (ports). Node.js automatically load-balances incoming connections across workers, ensuring efficient distribution.
+
+Key benefits:
+
+* **Local horizontal scaling:** spreads load across all CPU cores.
+* **Higher throughput:** more concurrent requests served in parallel.
+* **Fault isolation:** if a worker crashes, the master can restart it.
+* **Simple model:** requires minimal changes to your server code.
+
+## Clustering Setup
+
+This example follows a common pattern: the primary process spawns one worker per CPU core, and each worker simply imports the Kito server.
+
+<Tabs>
+<TabItem label="index.ts">
+
+```typescript
+import cluster from 'node:cluster';
+import os from 'node:os';
+import process from 'node:process';
+
+if (cluster.isPrimary) {
+    // Spawn a worker for each available CPU core
+    for (let i = 0; i < os.availableParallelism(); i++)
+      cluster.fork();
+    
+    cluster.on('exit', (worker) => {
+        console.log(`Worker ${worker.process.pid} died, restarting...`);
+        cluster.fork();
+    });
+} else {
+    // Each worker runs the Kito server
+    await import('./server');
+    console.log(`Worker ${process.pid} started`);
+}
+```
+
+</TabItem>
+
+<TabItem label="server.ts">
+
+```typescript
+import { server } from 'kitojs';
+
+const app = server({
+    refusePort: true 
+});
+
+app.get('/', ({ res }) => {
+    res.send('Hello from Kito with Clustering!');
+});
+
+app.listen(3000);
+```
+
+</TabItem>
+</Tabs>
+
+## Important Notes
+
+### Why `refusePort: true`?
+
+When running in cluster mode, only the primary process should handle port binding.
+Kito automatically detects that clustering is being used: enabling `refusePort: true` prevents each worker from attempting to bind the same port, allowing Node.js to manage shared port access internally.
+
+### Automatic Worker Restart
+
+Adding a listener for `cluster.on("exit")` lets you automatically restart any worker that crashes. This increases resilience without needing external tools like PM2 or systemd.
+
+### Stateful vs Stateless Design
+
+For best results, avoid storing in-memory state inside workers.
+Instead, use external stores such as Redis or databases.
+Otherwise, each worker will maintain isolated state.
+
+### Production Environments
+
+Although clustering can be done manually, production deployments often combine it with:
+
+* **PM2** for clustering + monitoring
+* **Docker** using multiple container replicas
+* **Orchestrators** like Kubernetes, Nomad, ECS
+
+Kito remains lightweight and fully compatible with all these strategies.
