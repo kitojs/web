@@ -26,6 +26,10 @@ export const sidebarConfig = [
         label: "Clustering",
         link: "/docs/advanced/clustering",
       },
+      {
+        label: "Unix Domain Sockets",
+        link: "/docs/advanced/unix-domain-sockets",
+      },
     ],
   },
 ];

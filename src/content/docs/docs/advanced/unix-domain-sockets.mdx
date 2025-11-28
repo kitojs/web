@@ -1,0 +1,43 @@
+---
+title: Unix Domain Sockets
+description: Using Unix Domain Sockets with Kito
+---
+
+import { Code, Aside, Tabs, TabItem } from '@components/docs';
+
+Unix Domain Sockets (UDS) provide a method for inter-process communication (IPC) on the same host machine. They are represented as special file system nodes and offer lower latency and higher throughput compared to traditional TCP/IP sockets, making them ideal for local communication between services.
+
+## Benefits of Using Unix Domain Sockets
+
+* **Performance:** UDS bypasses the network stack, resulting in faster data transfer.
+* **Security:** Access can be controlled via file system permissions.
+* **Simplicity:** No need to manage IP addresses or ports for local communication.
+
+## Setting Up Unix Domain Sockets in Kito
+
+```typescript
+import { server } from 'kitojs';
+const app = server();
+
+app.get('/', ({ res }) => {
+    res.send('Hello via Unix Domain Socket!');
+});
+
+app.listen({ unixSocket: './kito.sock' }, () => {
+    console.log('Server listening on Unix Domain Socket ./kito.sock');
+});
+```
+
+In this example, the Kito server listens on a Unix Domain Socket located at `./kito.sock`. 
+
+**Note:** Ensure that the file path is accessible and has the appropriate permissions for the server to create and bind to the socket.
+
+## Connecting to a Unix Domain Socket
+
+To connect to a Kito server using a Unix Domain Socket, you can use tools like `curl` or create a client in your application.
+
+```bash
+curl --unix-socket ./kito.sock http://localhost/
+```
+
+This command sends a request to the Kito server via the specified Unix Domain Socket.
