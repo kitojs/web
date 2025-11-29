@@ -1,0 +1,139 @@
+---
+title: Streaming
+description: How to send streamed responses and Server-Sent Events in Kito
+---
+
+import { Code, Aside, Tabs, TabItem } from '@components/docs';
+
+Kito provides built-in support for **streaming responses** and **Server-Sent Events (SSE)**.  
+These features allow your server to send data progressively without buffering the entire response, making them ideal for:
+
+- large payloads  
+- real-time updates  
+- incremental rendering  
+- long-running tasks  
+- log or progress streams  
+
+Streaming is fully compatible with Node.js’ HTTP layer and works out-of-the-box with Kito.
+
+---
+
+## Basic Streaming Response
+
+A streaming response sends data in chunks as it becomes available.  
+Kito exposes a simple API through `ctx.res.stream()`.
+
+```ts
+import { server } from "kitojs";
+
+const app = server();
+
+app.get("/stream", (ctx) => {
+  const stream = ctx.res.stream();
+
+  stream.write("Chunk 1\n");
+
+  setTimeout(() => {
+    stream.write("Chunk 2\n");
+  }, 1000);
+
+  setTimeout(() => {
+    stream.end("Final chunk\n");
+  }, 2000);
+});
+
+app.listen(3000);
+```
+
+### How it works
+
+* `ctx.res.stream()` starts a **chunked** HTTP response.
+* `stream.write()` sends data immediately to the client.
+* `stream.end()` sends the final chunk and closes the response.
+* When Kito detects a streaming response, it automatically sets the proper headers and flush behavior.
+
+---
+
+## Server-Sent Events (SSE)
+
+SSE provides **one-way real-time communication** from server to client over an HTTP connection.
+Kito includes a minimal and convenient SSE API.
+
+```ts
+import { server } from "kitojs";
+
+const app = server();
+
+app.get("/events", (ctx) => {
+  const sse = ctx.res.sse();
+
+  sse.send({ msg: "connected" }, "init");
+
+  let count = 0;
+
+  const interval = setInterval(() => {
+    sse.send({ count }, "update");
+    count++;
+
+    if (count >= 5) {
+      clearInterval(interval);
+      sse.send({ msg: "done" }, "complete");
+      sse.close();
+    }
+  }, 1000);
+});
+
+app.listen(3000);
+```
+
+### Key behaviors
+
+* `ctx.res.sse()` sets the correct SSE headers automatically.
+* `sse.send(data, eventName)` emits an SSE event with JSON-encoded data.
+* Events are flushed immediately to the client.
+* `sse.close()` closes the connection gracefully.
+
+---
+
+## When to Use Streaming
+
+Streaming is useful when:
+
+* you want to send partial results as they are produced
+* you generate large data sets
+* the process takes time and you want to show incremental progress
+* you need low-latency real-time updates
+* you're implementing logs, progress bars, AI output streaming, or incremental rendering
+
+If you need **bidirectional** real-time communication, consider WebSockets or WebTransport (coming soon).
+
+---
+
+## Client Examples
+
+### Fetch Streaming
+
+```ts
+const response = await fetch("/stream");
+const reader = response.body.getReader();
+
+while (true) {
+  const { done, value } = await reader.read();
+  if (done) break;
+  console.log(new TextDecoder().decode(value));
+}
+```
+
+### SSE Client
+
+```ts
+const events = new EventSource("/events");
+
+events.addEventListener("update", (e) => {
+  console.log(JSON.parse(e.data));
+});
+
+events.addEventListener("complete", () => {
+  events.close();
+});
+```

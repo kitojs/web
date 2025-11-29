@@ -13,6 +13,7 @@ export const sidebarConfig = [
       { label: "Routing", link: "/docs/core-concepts/routing" },
       { label: "Validation", link: "/docs/core-concepts/validation" },
       { label: "Middleware", link: "/docs/core-concepts/middleware" },
+      { label: "Streaming Responses", link: "/docs/core-concepts/streaming" },
       {
         label: "Context Extensions",
         link: "/docs/core-concepts/context",
