@@ -22,10 +22,10 @@ const userSchema = schema({
   })
 });
 
-app.post("/users", [userSchema], ctx => {
+app.post("/users", [userSchema], ({ req, res }) => {
   // Body is validated
-  const { name, email, age } = ctx.req.body;
-  ctx.res.json({ name, email, age });
+  const { name, email, age } = req.body;
+  res.json({ name, email, age });
 });
 ```
 
@@ -145,11 +145,11 @@ const completeSchema = schema({
   })
 });
 
-app.post("/posts/:id", [completeSchema], ctx => {
+app.post("/posts/:id", [completeSchema], ({ req }) => {
   // All parts are validated
-  const { id } = ctx.req.params;
-  const { page, limit } = ctx.req.query;
-  const { title, content } = ctx.req.body;
+  const { id } = req.params;
+  const { page, limit } = req.query;
+  const { title, content } = req.body;
 });
 ```
 
@@ -158,7 +158,7 @@ app.post("/posts/:id", [completeSchema], ctx => {
 Schemas provide full TypeScript type inference:
 
 ```typescript
-import type { Context } from "kitojs";
+// ...
 
 const userSchema = schema({
   body: t.object({
@@ -168,13 +168,13 @@ const userSchema = schema({
   })
 });
 
-type UserContext = Context<typeof userSchema>;
+type UserCtx = Context<typeof userSchema>;
 
-app.post("/users", [userSchema], (ctx: UserContext) => {
+app.post("/users", [userSchema], ({ req }: UserCtx) => {
   // TypeScript knows the exact types
-  ctx.req.body.name;   // string
-  ctx.req.body.email;  // string
-  ctx.req.body.age;    // number | undefined
+  req.body.name;   // string
+  req.body.email;  // string
+  req.body.age;    // number | undefined
 });
 ```
 
@@ -216,8 +216,8 @@ const batchSchema = schema({
   })
 });
 
-app.post("/users/batch", [batchSchema], ctx => {
-  const { users } = ctx.req.body;
+app.post("/users/batch", [batchSchema], ({ req }) => {
+  const { users } = req.body;
   // users is User[] with min 1, max 100 items
 });
 ```

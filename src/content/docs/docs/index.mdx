@@ -42,9 +42,9 @@ const userSchema = schema({
   })
 });
 
-app.post("/users", [userSchema], (ctx) => {
-  const { name, email } = ctx.req.body;
-  ctx.res.json({ name, email });
+app.post("/users", [userSchema], ({ req, res }) => {
+  const { name, email } = req.body;
+  res.json({ name, email });
 });
 
 app.listen(3000);
@@ -74,13 +74,13 @@ ctx.req.params.id;   // string (if validated)
 Extend the context with custom services:
 
 ```typescript
-const app = server().extend<{ db: Database }>((ctx) => {
+const app = server().extend<{ db: Database }>(ctx => {
   ctx.db = database;
 });
 
-app.get("/users", async (ctx) => {
-  const users = await ctx.db.query("SELECT * FROM users");
-  ctx.res.json(users);
+app.get("/users", async ({ db, res }) => {
+  const users = await db.query("SELECT * FROM users");
+  res.json(users);
 });
 ```
 

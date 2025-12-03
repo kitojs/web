@@ -34,9 +34,9 @@ const app = server().extend<{ db: Database }>(ctx => {
   ctx.db = db;
 });
 
-app.get("/users", async ctx => {
-  const users = await ctx.db.query("SELECT * FROM users");
-  ctx.res.json(users);
+app.get("/users", async ({ db, res }) => {
+  const users = await db.query("SELECT * FROM users");
+  res.json(users);
 });
 ```
 
@@ -57,11 +57,11 @@ const app = server().extend<Extensions>(ctx => {
   ctx.logger = logger;
 });
 
-app.get("/", ctx => {
+app.get("/", ({ db, config, logger }) => { 
   // TypeScript knows about all extensions
-  ctx.db.query("...");      // ✅ Type-safe
-  ctx.config.apiKey;        // ✅ Type-safe
-  ctx.logger.info("...");   // ✅ Type-safe
+  db.query("...");      // ✅ Type-safe
+  config.apiKey;        // ✅ Type-safe
+  logger.info("...");   // ✅ Type-safe
 });
 ```
 
@@ -70,7 +70,7 @@ app.get("/", ctx => {
 Return an object instead of mutating context:
 
 ```typescript
-const app = server().extend<{ db: Database }>(() => {
+const app = server().extend<{ db: Database }>((_) => {
   return {
     db: createDatabaseConnection()
   };
@@ -93,11 +93,11 @@ const app = server()
     ctx.logger = logger;
   });
 
-app.get("/", ctx => {
+app.get("/", ({ db, cache, logger }) => {
   // All extensions are available
-  ctx.db.query("...");
-  ctx.cache.get("...");
-  ctx.logger.info("...");
+  db.query("...");
+  cache.get("...");
+  logger.info("...");
 });
 ```
 
@@ -110,9 +110,9 @@ const app = server().extend<{ requestId: string }>(ctx => {
   ctx.requestId = crypto.randomUUID();
 });
 
-app.get("/", ctx => {
-  ctx.logger.info(`Request ID: ${ctx.requestId}`);
-  ctx.res.send("OK");
+app.get("/", ({ requestId, logger, res }) => {
+  logger.info(`Request ID: ${requestId}`);
+  res.send("OK");
 });
 ```
 
@@ -131,10 +131,10 @@ interface Services {
   };
 }
 
-const app = server().extend<Services>(() => ({
+const app = server().extend<Services>((ctx) => ({
   userService: {
-    getById: async (id) => db.query("SELECT * FROM users WHERE id = ?", [id]),
-    create: async (data) => db.query("INSERT INTO users...", data)
+    getById: async (id) => ctx.db.query("SELECT * FROM users WHERE id = ?", [id]),
+    create: async (data) => ctx.db.query("INSERT INTO users...", data)
   },
   emailService: {
     send: async (to, subject, body) => sendEmail(to, subject, body)
@@ -142,9 +142,11 @@ const app = server().extend<Services>(() => ({
 }));
 
 app.post("/users", async ctx => {
-  const user = await ctx.userService.create(ctx.req.body);
-  await ctx.emailService.send(user.email, "Welcome", "...");
-  ctx.res.json(user);
+  const { userService, emailService, req, res } = ctx;
+
+  const user = await userService.create(req.body);
+  await emailService.send(user.email, "Welcome", "...");
+  res.json(user);
 });
 ```
 
@@ -168,7 +170,7 @@ interface DB {
   query: <T>(sql: string, params?: any[]) => Promise<T>;
 }
 
-const app = server().extend<{ db: DB }>(() => ({
+const app = server().extend<{ db: DB }>((_) => ({
   db: {
     query: async (sql, params) => {
       const [rows] = await pool.execute(sql, params);
@@ -177,17 +179,17 @@ const app = server().extend<{ db: DB }>(() => ({
   }
 }));
 
-app.get("/users", async ctx => {
-  const users = await ctx.db.query("SELECT * FROM users");
-  ctx.res.json(users);
+app.get("/users", async ({ db, res }) => {
+  const users = await db.query("SELECT * FROM users");
+  res.json(users);
 });
 
-app.get("/users/:id", async ctx => {
-  const user = await ctx.db.query(
+app.get("/users/:id", async ({ db, req, res }) => {
+  const user = await db.query(
     "SELECT * FROM users WHERE id = ?",
-    [ctx.req.params.id]
+    [req.params.id]
   );
-  ctx.res.json(user);
+  res.json(user);
 });
 ```
 
@@ -205,16 +207,18 @@ const userSchema = schema({
   })
 });
 
-type UserContext = Context<typeof userSchema>;
+type UserCtx = Context<typeof userSchema>;
 
-app.post("/users", [userSchema], async (ctx: UserContext) => {
+app.post("/users", [userSchema], async (ctx: UserCtx) => {
+  const { db, req, res } = ctx;
+
   // Both validation and extensions work together
-  const user = await ctx.db.query(
+  const user = await db.query(
     "INSERT INTO users (name, email) VALUES (?, ?)",
-    [ctx.req.body.name, ctx.req.body.email]
+    [req.body.name, req.body.email]
   );
-  
-  ctx.res.json(user);
+
+  res.json(user);
 });
 ```
 

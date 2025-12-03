@@ -74,8 +74,8 @@ Create a simple server to verify your installation:
 import { server } from "kitojs";
 const app = server();
 
-app.get("/", ctx => {
-  ctx.res.send("Kito is working!");
+app.get("/", ({ res }) => {
+  res.send("Kito is working!");
 });
 
 app.listen(3000, () => console.log("server running!"));
