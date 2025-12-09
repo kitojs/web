@@ -68,7 +68,7 @@ app.get("/", ({ db, config, logger }) => {
 Return an object instead of mutating context:
 
 ```typescript
-const app = server().extend<{ db: Database }>((_) => {
+const app = server().extend<{ db: Database }>(_ => {
   return {
     db: createDatabaseConnection()
   };
@@ -130,7 +130,7 @@ interface Services {
   };
 }
 
-const app = server().extend<Services>((ctx) => ({
+const app = server().extend<Services>(ctx => ({
   userService: {
     getById: async (id) => ctx.db.query("SELECT * FROM users WHERE id = ?", [id]),
     create: async (data) => ctx.db.query("INSERT INTO users...", data)
@@ -154,8 +154,6 @@ app.post("/users", async ctx => {
 Use extensions with validated data:
 
 ```typescript
-import type { Context } from "kitojs";
-
 const userSchema = schema({
   body: t.object({
     name: t.str(),
@@ -163,11 +161,7 @@ const userSchema = schema({
   })
 });
 
-type UserCtx = Context<typeof userSchema>;
-
-app.post("/users", async (ctx: UserCtx) => {
-  const { db, req, res } = ctx;
-
+app.post("/users", async ({ db, req, res }) => {
   // Both validation and extensions work together
   const user = await db.query(
     "INSERT INTO users (name, email) VALUES (?, ?)",

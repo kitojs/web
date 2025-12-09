@@ -192,9 +192,7 @@ const userSchema = schema({
   })
 });
 
-type UserCtx = Context<typeof userSchema>;
-
-app.post("/users", ({ req }: UserCtx) => {
+app.post("/users", ({ req }) => {
   // TypeScript knows the exact types
   req.body.name;   // string
   req.body.email;  // string
