@@ -22,11 +22,35 @@ const userSchema = schema({
   })
 });
 
-app.post("/users", [userSchema], ({ req, res }) => {
+app.post("/users", ({ req, res }) => {
   // Body is validated
   const { name, email, age } = req.body;
   res.json({ name, email, age });
+}, userSchema);
+```
+
+## JSON Schema
+
+You can also use standard JSON Schema definitions:
+
+```typescript
+import { server, schema } from "kitojs";
+
+const userSchema = schema.json({
+  body: {
+    type: "object",
+    properties: {
+      name: { type: "string", minLength: 1 },
+      age: { type: "number", minimum: 0 }
+    },
+    required: ["name"]
+  }
 });
+
+app.post("/users", ({ req }) => {
+  const { name, age } = req.body;
+  res.json({ name, age });
+}, userSchema);
 ```
 
 ## Schema Types
@@ -145,12 +169,12 @@ const completeSchema = schema({
   })
 });
 
-app.post("/posts/:id", [completeSchema], ({ req }) => {
+app.post("/posts/:id", ({ req }) => {
   // All parts are validated
   const { id } = req.params;
   const { page, limit } = req.query;
   const { title, content } = req.body;
-});
+}, completeSchema);
 ```
 
 ## Type Safety
@@ -170,12 +194,12 @@ const userSchema = schema({
 
 type UserCtx = Context<typeof userSchema>;
 
-app.post("/users", [userSchema], ({ req }: UserCtx) => {
+app.post("/users", ({ req }: UserCtx) => {
   // TypeScript knows the exact types
   req.body.name;   // string
   req.body.email;  // string
   req.body.age;    // number | undefined
-});
+}, userSchema);
 ```
 
 ## Nested Objects
@@ -216,10 +240,10 @@ const batchSchema = schema({
   })
 });
 
-app.post("/users/batch", [batchSchema], ({ req }) => {
+app.post("/users/batch", ({ req }) => {
   const { users } = req.body;
   // users is User[] with min 1, max 100 items
-});
+}, batchSchema);
 ```
 
 ## Error Handling

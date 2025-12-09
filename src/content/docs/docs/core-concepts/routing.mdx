@@ -76,44 +76,70 @@ app.post("/users", ({ req, res }) => {
 
 ## Route Chaining
 
-Chain multiple routes on the same path:
+Chain multiple routes on the same path using `route()`. You can also apply middlewares to all routes in the chain:
 
 ```typescript
+import { server, router } from "kitojs";
+
+const app = server();
+
+// Basic chaining
 app.route("/api/users")
   .get(({ res }) => res.json({ users: [] }))
   .post(({ res }) => res.json({ created: true }))
   .end();
+
+// Chaining with middlewares
+app.route("/api/admin", [authMiddleware])
+  .get(({ res }) => res.send("Admin Dashboard"))
+  .post(({ res }) => res.send("Admin Action"))
+  .end();
 ```
 
-## Fluent API
+## Router
 
-Chain methods directly on the server instance:
-
-```typescript
-server()
-  .get("/", ({ res }) => res.send("Home"))
-  .get("/about", ({ res }) => res.send("About"))
-  .post("/contact", ({ res }) => res.send("Contact"))
-  .listen(3000);
-```
-
-## Route Organization
-
-Group related routes for better organization:
+The `router()` function creates a new router instance that can be mounted to the main server or other routers. This is useful for organizing your application into modules.
 
 ```typescript
+import { server, router } from "kitojs";
+
+// Create a router for user routes
+const users = router();
+
+users.get("/", ({ res }) => {
+  res.send("Users list");
+});
+
+users.post("/", ({ res }) => {
+  res.send("Create user");
+});
+
+// Mount the router to the main app
 const app = server();
-
-// User routes
-app.get("/users", ({ res }) => res.json({ users: [] }));
-app.get("/users/:id", ({ res }) => res.json({ user: {} }));
-app.post("/users", ({ res }) => res.json({ created: true }));
-
-// Post routes
-app.get("/posts", ({ res }) => res.json({ posts: [] }));
-app.get("/posts/:id", ({ res }) => res.json({ post: {} }));
+app.mount("/users", users);
 
 app.listen(3000);
+```
+
+You can also export routers from separate files:
+
+```typescript
+// routes/cats.ts
+import { router } from "kitojs";
+
+export default router()
+  .get("/", ({ res }) => res.send("All cats"))
+  .post("/", ({ res }) => res.send("New cat"));
+```
+
+```typescript
+// index.ts
+import { server } from "kitojs";
+import catsRoutes from "./routes/cats";
+
+server()
+  .mount("/cats", catsRoutes)
+  .listen(3000);
 ```
 
 ## Response Methods
