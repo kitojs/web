@@ -24,19 +24,16 @@ Use the `extend()` method to add properties:
 ```typescript
 import { server } from "kitojs";
 
-interface Database {
-  query: (sql: string) => Promise<any>;
+interface Extends {
+  user: { id: string; name: string };
 }
 
-const db: Database = createDatabaseConnection();
-
-const app = server().extend<{ db: Database }>(ctx => {
-  ctx.db = db;
+const app = server().extend<Extends>(ctx => {
+  ctx.user = { id: "1", name: "Neo" };
 });
 
-app.get("/users", async ({ db, res }) => {
-  const users = await db.query("SELECT * FROM users");
-  res.json(users);
+app.get("/", ({ res, user }) => {
+  res.json({ user });
 });
 ```
 
@@ -51,11 +48,12 @@ interface Extensions {
   logger: Logger;
 }
 
-const app = server().extend<Extensions>(ctx => {
-  ctx.db = db;
-  ctx.config = config;
-  ctx.logger = logger;
-});
+const app = server()
+  .extend<Extensions>(ctx => {
+    ctx.db = db;
+    ctx.config = config;
+    ctx.logger = logger;
+  });
 
 app.get("/", ({ db, config, logger }) => { 
   // TypeScript knows about all extensions
@@ -106,9 +104,10 @@ app.get("/", ({ db, cache, logger }) => {
 Create request-specific data:
 
 ```typescript
-const app = server().extend<{ requestId: string }>(ctx => {
-  ctx.requestId = crypto.randomUUID();
-});
+const app = server()
+  .extend<{ requestId: string }>(ctx => {
+    ctx.requestId = crypto.randomUUID();
+  });
 
 app.get("/", ({ requestId, logger, res }) => {
   logger.info(`Request ID: ${requestId}`);
@@ -150,49 +149,6 @@ app.post("/users", async ctx => {
 });
 ```
 
-## Database Connection Example
-
-Full example with database integration:
-
-```typescript
-import { server } from "kitojs";
-import { createPool, Pool } from "mysql2/promise";
-
-const pool = createPool({
-  host: "localhost",
-  user: "root",
-  database: "myapp",
-  waitForConnections: true,
-  connectionLimit: 10
-});
-
-interface DB {
-  query: <T>(sql: string, params?: any[]) => Promise<T>;
-}
-
-const app = server().extend<{ db: DB }>((_) => ({
-  db: {
-    query: async (sql, params) => {
-      const [rows] = await pool.execute(sql, params);
-      return rows;
-    }
-  }
-}));
-
-app.get("/users", async ({ db, res }) => {
-  const users = await db.query("SELECT * FROM users");
-  res.json(users);
-});
-
-app.get("/users/:id", async ({ db, req, res }) => {
-  const user = await db.query(
-    "SELECT * FROM users WHERE id = ?",
-    [req.params.id]
-  );
-  res.json(user);
-});
-```
-
 ## Combining with Validation
 
 Use extensions with validated data:
@@ -209,7 +165,7 @@ const userSchema = schema({
 
 type UserCtx = Context<typeof userSchema>;
 
-app.post("/users", [userSchema], async (ctx: UserCtx) => {
+app.post("/users", async (ctx: UserCtx) => {
   const { db, req, res } = ctx;
 
   // Both validation and extensions work together
@@ -219,7 +175,7 @@ app.post("/users", [userSchema], async (ctx: UserCtx) => {
   );
 
   res.json(user);
-});
+}, userSchema);
 ```
 
 <Aside type="tip">

@@ -154,11 +154,11 @@ const userSchema = schema({
   }),
 });
 
-app.post("/users", [userSchema], ({ req, res }) => {
+app.post("/users", ({ req, res }) => {
   // Body is now validated
   const { name, email, age } = req.body;
   res.json({ name, email, age });
-});
+}, userSchema);
 
 app.listen(3000);
 ```
