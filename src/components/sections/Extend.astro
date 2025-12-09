@@ -16,21 +16,17 @@ const features = [
 ];
 
 const codeSnippet = `import { server } from "kitojs";
-import type { Database } from "your-preferred-db";
 
-const app = server().extend<{
-  db: Database;
+interface Extends {
   user: { id: string; name: string };
-}>(ctx => {
-  ctx.db = db;
+}
+
+const app = server().extend<Extends>(ctx => {
   ctx.user = { id: "1", name: "Neo" };
 });
 
-app.get("/", ctx => {
-  ctx.res.json({
-    user: ctx.user.name,
-    users: ctx.db.query("SELECT * FROM users"),
-  });
+app.get("/", ({ res, user }) => {
+  res.json({ user });
 });
 
 app.listen(3000);`;

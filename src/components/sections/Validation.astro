@@ -20,24 +20,21 @@ const features = [
   },
 ];
 
-const codeSnippet = `import { server, schema, t } from 'kitojs';
-import type { Context } from 'kitojs'
+const codeSnippet = `import { server, schema, t } from "kitojs";
 
-const UserSchema = schema({
+const userSchema = schema({
   params: t.object({ id: t.str().uuid() }),
-  query: t.object({ limit: t.num().max(100).default(10) }),
+  query: t.object({ limit: t.num().max(100) }),
   body: t.object({ name: t.str().min(1) }),
 });
 
-type Ctx = Context<typeof UserSchema>
-
-app.post("/users/:id", [UserSchema], (ctx: Ctx) => {
-  ctx.res.json({
-    id: ctx.params.id,
-    limit: ctx.query.limit,
-    name: ctx.body.name
+app.post("/users/:id", ({ req, res }) => {
+  res.json({
+    id: req.params.id,
+    limit: req.query.limit,
+    name: req.body.name
   });
-});
+}, userSchema);
 
 app.listen(3000);`;
 ---
