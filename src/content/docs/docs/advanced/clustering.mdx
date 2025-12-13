@@ -56,7 +56,7 @@ if (cluster.isPrimary) {
 import { server } from 'kitojs';
 
 const app = server({
-    refusePort: true 
+    reusePort: true 
 });
 
 app.get('/', ({ res }) => {
@@ -71,10 +71,10 @@ app.listen(3000);
 
 ## Important Notes
 
-### Why `refusePort: true`?
+### Why `reusePort: true`?
 
 When running in cluster mode, only the primary process should handle port binding.
-Kito automatically detects that clustering is being used: enabling `refusePort: true` prevents each worker from attempting to bind the same port, allowing Node.js to manage shared port access internally.
+Kito automatically detects that clustering is being used: enabling `reusePort: true` prevents each worker from attempting to bind the same port, allowing Node.js to manage shared port access internally.
 
 ### Automatic Worker Restart
 
